@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二十種天然中藥單體貼布分子圖譜與經絡穴位分析儀表板</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        herbal: {
+                            bg: '#FAF8F5',
+                            card: '#FFFFFF',
+                            primary: '#2D5A4C',
+                            secondary: '#5C8D75',
+                            accent: '#C86D51',
+                            neutral: '#2D3748',
+                            muted: '#718096',
+                            light: '#EFECE6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chosen Palette: Herbal Harmony (Warm Cream background, Deep Forest Green primary, Terracotta accent, Soft Sage secondary) -->
+    <!-- Application Structure Plan: 
+        1. Executive Dashboard / Header: High-level metrics summarizing 20 patches, 4 domain matrices, core monomer hubs, and TCM Meridian integration.
+        2. Navigation Tabs: 
+           - 貼布總覽矩陣 (Filterable Grid & Interactive Search)
+           - 分子樞紐網絡藥理 (Network Pharmacology Hub & Visualizations)
+           - 經皮傳遞 (TDDS) 障礙 (MW vs logP Scatter Analysis & Carrier Engineering)
+           - 生化標靶途徑 (Biochemical Pathways & Targets Explorer)
+           - 中醫經絡與穴位貼敷 (TCM Meridian & Acupoint Visual Interactive Mapping & Body Visualizer)
+        3. Dynamic Acupoint Visualizer Engine: Interactive Canvas rendering human silhouette, acupoint coordinates, meridian paths, and clinical mechanics.
+        4. Interactive Details Modal: Deep-dive view combining chemical monomer details, biopathways, and TCM Acupoint application protocols.
+    -->
+    <!-- Visualization & Content Choices:
+        - Human Acupoint Mapping Visualizer -> HTML5 Canvas dynamic drawing (Body Silhouette + Acupoint Glowing Nodes + Meridian Connection Lines) -> Clear spatial localization.
+        - Domain Distribution & Monomer Frequencies -> Horizontal/Vertical Bar Chart & Doughnut (Chart.js) -> Quick identification of key ingredients.
+        - Molecular Permeability Barrier -> Scatter Plot (MW vs. logP) with Lipinski Rule thresholds (Chart.js) -> Clear demonstration of transdermal challenges.
+        - Acupoint Location Explorer -> Interactive Region Filtering & Dynamic Acupoint Cards with Neuro-segmental & TCM principles -> Actionable clinical guidance.
+        - CONFIRMATION: NO SVG or Mermaid JS used. All visuals rely on HTML5 Canvas (Chart.js & custom Acupoint Canvas Visualizer) and Tailwind/CSS layout with Unicode icons.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            background-color: #FAF8F5;
+            color: #2D3748;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 680px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #EFECE6;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #A0AEC0;
+            border-radius: 4px;
+        }
+        .acupoint-canvas-container {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            background: #1A2E26;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-herbal-secondary selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-herbal-primary text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🌿</span>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">二十種天然中藥單體貼布分析系統</h1>
+                    <p class="text-xs sm:text-sm text-green-100 opacity-90">分子圖譜、網絡藥理機轉、TDDS 經皮傳遞與中醫經絡穴位貼敷系統</p>
+                </div>
+            </div>
+            <!-- Global Quick Search Input -->
+            <div class="relative w-full md:w-80">
+                <input type="text" id="globalSearch" placeholder="搜尋貼布、單體、穴位(如百會)或經絡..." 
+                       class="w-full bg-white/10 text-white placeholder-green-100/70 border border-white/20 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:bg-white/20 transition-all">
+                <span class="absolute left-3 top-2.5 text-xs text-green-100">🔍</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+        <!-- Executive Summary Cards -->
+        <section class="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+            <div class="bg-white p-3.5 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex items-center space-x-3">
+                <div class="p-2.5 sm:p-3 bg-emerald-50 rounded-lg text-emerald-700 text-lg sm:text-xl font-bold">20</div>
+                <div>
+                    <div class="text-[11px] text-herbal-muted font-medium">總貼布處方款數</div>
+                    <div class="text-xs sm:text-sm font-bold text-herbal-neutral">標靶活性單體</div>
+                </div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex items-center space-x-3">
+                <div class="p-2.5 sm:p-3 bg-amber-50 rounded-lg text-amber-700 text-lg sm:text-xl font-bold">4</div>
+                <div>
+                    <div class="text-[11px] text-herbal-muted font-medium">核心適應症領域</div>
+                    <div class="text-xs sm:text-sm font-bold text-herbal-neutral">腦神/骨傷/臟腑/免疫</div>
+                </div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex items-center space-x-3">
+                <div class="p-2.5 sm:p-3 bg-teal-50 rounded-lg text-teal-700 text-lg sm:text-xl font-bold">8</div>
+                <div>
+                    <div class="text-[11px] text-herbal-muted font-medium">跨界分子樞紐</div>
+                    <div class="text-xs sm:text-sm font-bold text-herbal-neutral">高頻多靶點單體</div>
+                </div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex items-center space-x-3">
+                <div class="p-2.5 sm:p-3 bg-orange-50 rounded-lg text-orange-700 text-lg sm:text-xl font-bold">3</div>
+                <div>
+                    <div class="text-[11px] text-herbal-muted font-medium">TDDS 載體工程</div>
+                    <div class="text-xs sm:text-sm font-bold text-herbal-neutral">微乳/醇質體/微針</div>
+                </div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex items-center space-x-3 col-span-2 md:col-span-1">
+                <div class="p-2.5 sm:p-3 bg-rose-50 rounded-lg text-rose-700 text-lg sm:text-xl font-bold">14</div>
+                <div>
+                    <div class="text-[11px] text-herbal-muted font-medium">主要循行經絡</div>
+                    <div class="text-xs sm:text-sm font-bold text-herbal-neutral">督任二脈與十二正經</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex border-b border-stone-300 space-x-1 sm:space-x-6 overflow-x-auto custom-scrollbar pb-1">
+            <button id="tab-matrix" onclick="switchTab('matrix')" class="tab-btn px-3.5 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors border-b-2 border-herbal-primary text-herbal-primary bg-white shadow-sm flex items-center space-x-1.5 whitespace-nowrap">
+                <span>📋</span><span>貼布總覽矩陣</span>
+            </button>
+            <button id="tab-network" onclick="switchTab('network')" class="tab-btn px-3.5 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors text-herbal-muted hover:text-herbal-neutral flex items-center space-x-1.5 whitespace-nowrap">
+                <span>🧬</span><span>分子樞紐網絡藥理</span>
+            </button>
+            <button id="tab-tdds" onclick="switchTab('tdds')" class="tab-btn px-3.5 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors text-herbal-muted hover:text-herbal-neutral flex items-center space-x-1.5 whitespace-nowrap">
+                <span>🚚</span><span>經皮傳遞 (TDDS) PK</span>
+            </button>
+            <button id="tab-pathways" onclick="switchTab('pathways')" class="tab-btn px-3.5 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors text-herbal-muted hover:text-herbal-neutral flex items-center space-x-1.5 whitespace-nowrap">
+                <span>🎯</span><span>生化標靶途徑</span>
+            </button>
+            <button id="tab-acupoints" onclick="switchTab('acupoints')" class="tab-btn px-3.5 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors text-herbal-muted hover:text-herbal-neutral flex items-center space-x-1.5 whitespace-nowrap">
+                <span>🧭</span><span>中醫經絡與穴位貼敷 (繪圖地圖)</span>
+            </button>
+        </nav>
+
+        <!-- TAB 1: 貼布總覽矩陣 -->
+        <section id="view-matrix" class="tab-content flex flex-col gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <h2 class="text-lg font-bold text-herbal-primary mb-2 flex items-center gap-2">
+                    <span>💡</span><span>四大功能領域與二十款單體貼布矩陣</span>
+                </h2>
+                <p class="text-sm text-herbal-muted leading-relaxed mb-4">
+                    本區塊收錄了全套 20 款天然中藥單體貼布。這些配方擺脫了傳統粗萃物成分複雜的局限，採用化學結構明確的活性單體進行精準靶向調控。點選貼布卡片可同時檢視詳細化學分子組成、生化標靶途徑與中醫經絡穴位對應指南。
+                </p>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button onclick="filterCategory('all')" class="cat-filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-herbal-primary text-white border border-herbal-primary shadow-sm transition-all">全領域 (20)</button>
+                    <button onclick="filterCategory('brain')" class="cat-filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300 transition-all">🧠 腦神經與認知情緒 (9)</button>
+                    <button onclick="filterCategory('bone')" class="cat-filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300 transition-all">🦴 骨傷與疼痛退化 (3)</button>
+                    <button onclick="filterCategory('visceral')" class="cat-filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300 transition-all">🫀 臟腑機能與下焦代謝 (4)</button>
+                    <button onclick="filterCategory('immune')" class="cat-filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300 transition-all">🛡️ 免疫排毒與基礎營養 (4)</button>
+                </div>
+
+                <!-- Patch Cards Grid -->
+                <div id="patchGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+
+            <!-- Visual Overview Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                    <h3 class="text-md font-bold text-herbal-neutral mb-1 flex items-center gap-2">
+                        <span>📊</span><span>四大領域貼布配方數量分佈</span>
+                    </h3>
+                    <p class="text-xs text-herbal-muted mb-4">呈現二十款天然單體貼布在四大核心病理範疇的臨床定位比例。</p>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                    <h3 class="text-md font-bold text-herbal-neutral mb-1 flex items-center gap-2">
+                        <span>📈</span><span>高頻天然活性單體出現率</span>
+                    </h3>
+                    <p class="text-xs text-herbal-muted mb-4">統計跨配方出現頻率最高的前幾種核心天然活性單體分子。</p>
+                    <div class="chart-container">
+                        <canvas id="topMonomersChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 分子樞紐網絡藥理 -->
+        <section id="view-network" class="tab-content hidden flex flex-col gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <h2 class="text-lg font-bold text-herbal-primary mb-2 flex items-center gap-2">
+                    <span>🧬</span><span>核心分子樞紐之跨配方網絡藥理比對</span>
+                </h2>
+                <p class="text-sm text-herbal-muted leading-relaxed mb-4">
+                    中藥單體具備「多成分、多靶點、多通路」的網絡調節特徵。分析顯示，人參皂苷Rg1、天麻素、薑黃素及木犀草素等分子扮演了跨領域網絡藥理核心節點，兼具中樞抗退行性變與周邊抗發炎之多靶點活性。點選下方分子樞紐按鈕可檢視其在各貼布中的分佈與共享藥理表型。
+                </p>
+
+                <!-- Hub Selection Tabs -->
+                <div id="hubSelector" class="flex flex-wrap gap-2 mb-6">
+                    <!-- JS renders hub selector buttons -->
+                </div>
+
+                <!-- Hub Details Display Area -->
+                <div id="hubDetailCard" class="bg-stone-50 border border-stone-200 rounded-xl p-5">
+                    <!-- JS renders active hub details -->
+                </div>
+            </div>
+
+            <!-- Monomers Comparison Table -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                <h3 class="text-md font-bold text-herbal-neutral mb-3 flex items-center gap-2">
+                    <span>📑</span><span>八大核心分子樞紐跨界藥理橫向對照表</span>
+                </h3>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-xs text-left text-herbal-neutral border-collapse">
+                        <thead class="bg-herbal-light text-herbal-primary font-bold">
+                            <tr>
+                                <th class="p-3 border border-stone-200">核心單體分子</th>
+                                <th class="p-3 border border-stone-200">化學式</th>
+                                <th class="p-3 border border-stone-200">跨界出現之貼布</th>
+                                <th class="p-3 border border-stone-200">主要生化受體與訊息途徑</th>
+                                <th class="p-3 border border-stone-200">跨疾病共享之核心藥理表型</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hubTableBody">
+                            <!-- JS dynamic fill -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: 經皮傳遞 (TDDS) 與 PK 障礙 -->
+        <section id="view-tdds" class="tab-content hidden flex flex-col gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <h2 class="text-lg font-bold text-herbal-primary mb-2 flex items-center gap-2">
+                    <span>🚚</span><span>穿皮傳遞動力學障礙與分子篩分極限分析</span>
+                </h2>
+                <p class="text-sm text-herbal-muted leading-relaxed mb-4">
+                    皮膚表層角質層 (Stratum Corneum) 具緻密的「磚泥結構」。經典 Lipinski 穿皮規則指出：滲透分子的分子量 (MW) 需 &lt; 500 Da，油水分配係數 LogP 在 1–3 之間。下圖展示了貼布中各關鍵單體分子的穿透障礙分佈。
+                </p>
+
+                <!-- Scatter Chart: MW vs LogP -->
+                <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <h3 class="text-sm font-bold text-herbal-primary">分子量 (MW) vs. 油水分配係數 (LogP) 經皮擴散散佈圖</h3>
+                        <span class="text-xs text-amber-700 bg-amber-100 px-2.5 py-1 rounded-md font-medium mt-1 md:mt-0">虛線框內代表高被動透皮潛力區 (MW &lt; 500 Da, LogP 1~3)</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tddsScatterChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- TDDS Engineering Technologies Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                        <div class="text-herbal-accent text-lg font-bold mb-2 flex items-center gap-2">
+                            <span>🧊</span><span>冰片/龍腦 (Borneol) 促滲</span>
+                        </div>
+                        <p class="text-xs text-herbal-neutral leading-relaxed">
+                            <strong>物理機轉：</strong>天然單萜分子能插層插入角質細胞間脂質雙分子層，瓦解脂質緊密堆積秩序；同時特異性活化 TRPM8 通道舒張微血管，並可逆性下調 Claudin-5 與 ZO-1 緊密連接蛋白。
+                        </p>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                        <div class="text-herbal-primary text-lg font-bold mb-2 flex items-center gap-2">
+                            <span>🧫</span><span>奈米微乳與醇質體</span>
+                        </div>
+                        <p class="text-xs text-herbal-neutral leading-relaxed">
+                            <strong>載體工程：</strong>粒徑 10–100 nm 之熱力學穩定微乳能將難溶性單體（如丹參酮IIA、薑黃素）增溶數千倍；醇質體 (Ethosomes) 含 20%~45% 乙醇，可變形擠過表皮微小孔隙，高效包載中大分子皂苷。
+                        </p>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                        <div class="text-herbal-secondary text-lg font-bold mb-2 flex items-center gap-2">
+                            <span>💉</span><span>可溶性微針陣列 (DMNs)</span>
+                        </div>
+                        <p class="text-xs text-herbal-neutral leading-relaxed">
+                            <strong>突破物理障礙：</strong>採用高分子微針 (200-700 μm) 機械性刺穿高阻抗角質層，於真皮淺層速釋或控釋大分子三萜皂苷（三七皂苷R1、酸棗仁皂苷A），完全無痛且無損神經末梢。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: 生化標靶與作用途徑 -->
+        <section id="view-pathways" class="tab-content hidden flex flex-col gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <h2 class="text-lg font-bold text-herbal-primary mb-2 flex items-center gap-2">
+                    <span>🎯</span><span>核心分子傳導軸與生化標靶途徑</span>
+                </h2>
+                <p class="text-sm text-herbal-muted leading-relaxed mb-4">
+                    二十款貼布之單體藥理機轉高度收斂於兩大深層分子網絡：一是促進神經元存活與突觸新生的 BDNF/TrkB/CREB 軸線；二是拮抗氧化應激、平息發炎風暴與清除病理蛋白的 NF-κB/Nrf2/自噬軸線。
+                </p>
+
+                <!-- Pathway Accordion/Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-5">
+                        <h3 class="text-md font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                            <span>🌱</span><span>1. 神經元存活與突觸新生偶聯軸線</span>
+                        </h3>
+                        <p class="text-xs text-emerald-800 leading-relaxed mb-3">
+                            人參皂苷Rg1、天麻素及薑黃素等收斂至 cAMP/PKA/CREB 轉錄軸，驅動 Ser133 位點磷酸化，促進 BDNF 合成。分泌的 BDNF 結合受體 TrkB 活化 Ras-Raf-MEK-ERK 及 PI3K-Akt 通路。
+                        </p>
+                        <div class="bg-white p-3 rounded-lg border border-emerald-200 text-xs text-emerald-950 space-y-1">
+                            <div class="font-semibold text-emerald-800">關鍵生化標靶與蛋白：</div>
+                            <div>• 上調 Synaptophysin (突觸小泡蛋白)、PSD-95 (突觸後緻密蛋白)</div>
+                            <div>• 增強 LTP (長時程增強) 電位幅度和樹突棘成熟</div>
+                            <div>• 關聯貼布：2B貼布, 特A貼布, 智慧貼布, 健忘失智貼布, 新腦血管貼布</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-5">
+                        <h3 class="text-md font-bold text-amber-900 mb-2 flex items-center gap-2">
+                            <span>🛡️</span><span>2. 抗氧化應激、發炎靜息與自噬清除軸線</span>
+                        </h3>
+                        <p class="text-xs text-amber-800 leading-relaxed mb-3">
+                            木犀草素、黃芩素、薑黃素及丹參酮IIA 阻斷 IKK 複合體活化，鎖定 NF-κB 於胞漿，抑制 TNF-α、IL-1β 及 NLRP3 發炎小體轉錄；同時活化 Keap1-Nrf2 進入核內，巨量誘導 SOD、HO-1。
+                        </p>
+                        <div class="bg-white p-3 rounded-lg border border-amber-200 text-xs text-amber-950 space-y-1">
+                            <div class="font-semibold text-amber-800">關鍵生化標靶與蛋白：</div>
+                            <div>• 抑制 COX-2, iNOS, MMP-9 降解，啟動自噬清解 Aβ/α-synuclein</div>
+                            <div>• 抑制 5-LOX 與 5α-還原酶，降解炎性瀑布反應</div>
+                            <div>• 關聯貼布：1A貼布, 帕金森氏症貼布, 感冒貼片, 前列腺貼布, 膽腎貼片</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: 中醫經絡與穴位貼敷 (繪圖地圖) -->
+        <section id="view-acupoints" class="tab-content hidden flex flex-col gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-herbal-primary flex items-center gap-2">
+                            <span>🧭</span><span>二十種貼布之中醫經絡循行與穴位貼敷動態地圖</span>
+                        </h2>
+                        <p class="text-xs text-herbal-muted mt-1">
+                            中醫外治法「穴位貼敷 (Acupoint Application)」透過「經絡氣血傳導」與「脊髓節段神經反射」發揮藥穴協同作用。請使用下方的<strong>「動態穴位繪圖選擇器」</strong>點選任一貼布，系統將透過 Canvas 現場繪製該貼布於人體體表的精確貼敷部位、對應穴位點與經絡循行路徑。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Interactive Visualizer Engine Card -->
+                <div class="bg-stone-900 text-stone-100 p-4 sm:p-5 rounded-2xl shadow-lg border border-stone-800 my-3">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <!-- Left Controls & Patch Selectors -->
+                        <div class="lg:w-1/3 flex flex-col justify-between space-y-4">
+                            <div>
+                                <label class="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-2">🎯 選擇貼布以繪製穴位圖譜：</label>
+                                <select id="patchVisualSelect" onchange="drawSelectedPatchAcupoints(this.value)" class="w-full bg-stone-800 text-amber-200 border border-stone-700 rounded-lg p-2.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                    <!-- Options populated dynamically via JS -->
+                                </select>
+                            </div>
+
+                            <!-- Patch Quick Badges Grid -->
+                            <div class="bg-stone-800/80 p-3 rounded-xl border border-stone-700 space-y-2">
+                                <div class="text-[11px] text-stone-400 font-bold">快捷選擇常用貼布：</div>
+                                <div id="quickPatchBtns" class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                                    <!-- Dynamic buttons -->
+                                </div>
+                            </div>
+
+                            <!-- Acupoint Visual Key / Details Box -->
+                            <div id="visDetailsBox" class="bg-stone-800/90 p-3.5 rounded-xl border border-amber-500/30 text-xs space-y-2">
+                                <!-- Dynamic details output -->
+                            </div>
+                        </div>
+
+                        <!-- Right Interactive Canvas Map -->
+                        <div class="lg:w-2/3 flex flex-col items-center">
+                            <div class="w-full flex items-center justify-between mb-2 px-1">
+                                <span class="text-xs font-bold text-stone-300 flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                    人體體表經絡穴位對應繪製 (Canvas Graphic Render)
+                                </span>
+                                <span id="visualRegionTag" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">區域: 頭頸部</span>
+                            </div>
+                            
+                            <!-- Canvas Display -->
+                            <div class="acupoint-canvas-container flex items-center justify-center border border-stone-700">
+                                <canvas id="acupointCanvas" width="600" height="420" class="w-full h-full object-contain"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Region Filters -->
+                <div class="flex flex-wrap items-center gap-2 my-4 pt-2 border-t border-stone-100">
+                    <span class="text-xs font-bold text-herbal-neutral mr-2">按人體貼敷部位篩選卡片：</span>
+                    <button onclick="filterAcupointRegion('all')" class="acupoint-region-btn px-3 py-1 text-xs font-semibold rounded-lg bg-herbal-primary text-white border border-herbal-primary">全部部位 (20)</button>
+                    <button onclick="filterAcupointRegion('head')" class="acupoint-region-btn px-3 py-1 text-xs font-semibold rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300">🗣️ 頭頸臉部 (腦神/眼部)</button>
+                    <button onclick="filterAcupointRegion('chest-abdomen')" class="acupoint-region-btn px-3 py-1 text-xs font-semibold rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300">🫁 胸腹前腹部 (臟腑/下焦)</button>
+                    <button onclick="filterAcupointRegion('back-腰')" class="acupoint-region-btn px-3 py-1 text-xs font-semibold rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300">🪵 背腰督脈部 (脊髓/腎骨)</button>
+                    <button onclick="filterAcupointRegion('limbs')" class="acupoint-region-btn px-3 py-1 text-xs font-semibold rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300">🦵 四肢遠端穴位 (全身調控)</button>
+                </div>
+
+                <!-- Acupoint Cards Container -->
+                <div id="acupointGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Detailed Patch View -->
+    <div id="patchModal" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl border border-stone-200 p-6 flex flex-col gap-4">
+            <div class="flex items-start justify-between border-b border-stone-200 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span id="modalIcon" class="text-3xl">🌿</span>
+                    <div>
+                        <h3 id="modalTitle" class="text-xl font-bold text-herbal-primary">貼布名稱</h3>
+                        <span id="modalCategory" class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700 mt-1">領域分類</span>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 text-2xl font-bold px-2">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-xs font-bold text-herbal-muted uppercase tracking-wider mb-1">主要健康訴求與適應症</h4>
+                    <p id="modalClaim" class="text-sm font-semibold text-herbal-neutral bg-stone-50 p-3 rounded-lg border border-stone-200"></p>
+                </div>
+
+                <!-- TCM Acupoint Section in Modal -->
+                <div class="bg-amber-50/70 border border-amber-200 p-3.5 rounded-xl space-y-2">
+                    <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>🧭</span><span>中醫經絡與最適貼敷穴位定位指南</span>
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="font-bold text-amber-950">🎯 推薦貼敷穴位 (主穴/配穴)：</span>
+                            <div id="modalAcupoints" class="font-medium text-amber-900 mt-0.5"></div>
+                        </div>
+                        <div>
+                            <span class="font-bold text-amber-950">🛣️ 對應循行經絡：</span>
+                            <div id="modalMeridians" class="font-medium text-amber-900 mt-0.5"></div>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-amber-200/60 text-xs">
+                        <div class="font-bold text-amber-950 mb-0.5">💡 經絡氣血與神經反射作用原理：</div>
+                        <p id="modalTcmPrinciple" class="text-amber-900 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-herbal-muted uppercase tracking-wider mb-1">關鍵生化標靶與作用途徑</h4>
+                    <p id="modalTarget" class="text-sm text-stone-700 bg-emerald-50/50 p-3 rounded-lg border border-emerald-100"></p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-herbal-muted uppercase tracking-wider mb-2">核心活性單體與化學分子式</h4>
+                    <div id="modalMonomers" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- JS renders monomers -->
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-herbal-muted uppercase tracking-wider mb-1">深度分子藥理與穿皮評估</h4>
+                    <p id="modalDetailDesc" class="text-xs text-stone-600 leading-relaxed bg-stone-50 p-3 rounded-lg border border-stone-200"></p>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-stone-200 flex justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 bg-herbal-primary text-white rounded-lg text-xs font-semibold hover:bg-herbal-secondary transition-colors">關閉面板</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Code -->
+    <script>
+        // Extended Source Report Data Model including TCM Meridian & Acupoints with Visual Coordinates
+        const patchesData = [
+            {
+                id: "2B", name: "2B貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "🧠",
+                region: "head",
+                claim: "促進大腦神經元新生與突觸可塑性",
+                target: "BDNF/TrkB 信號軸、上調 PSD-95 表達、抑制細胞凋亡",
+                acupoints: "百會 (GV20)、神庭 (GV24)、印堂 (EX-HN3)",
+                meridians: "督脈 (Governor Vessel)、足太陽膀胱經",
+                tcmPrinciple: "【督脈入絡腦】百會為諸陽之會，神庭與印堂屬督脈前額要穴。督脈直接貫通脊髓與腦髓，在此處貼敷天麻素與人參皂苷，能激發清陽之氣直達髓海，經脊髓節段與頭皮三叉神經分支激發腦部神經元可塑性，促進海馬迴突觸再生。",
+                canvasPoints: [
+                    { name: "百會 (GV20)", x: 300, y: 55, side: "top" },
+                    { name: "神庭 (GV24)", x: 300, y: 75, side: "front" },
+                    { name: "印堂 (EX-HN3)", x: 300, y: 92, side: "front" }
+                ],
+                monomers: [
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參、三七" },
+                    { name: "白果內酯", formula: "C15H18O8", source: "銀杏葉" },
+                    { name: "黃芩素", formula: "C15H10O5", source: "黃芩" },
+                    { name: "遠志皂苷元", formula: "C30H45ClO6", source: "遠志" },
+                    { name: "丹參酚酸B", formula: "C36H30O16", source: "丹參" },
+                    { name: "二苯乙烯苷", formula: "C20H22O9", source: "何首烏" }
+                ],
+                desc: "驅動成年大腦神經網絡結構性重塑與突觸再生。天麻素穿透BBB轉化為對羥基苯甲醇；Rg1刺激海馬齒狀回神經幹細胞分化；黃芩素抑制HDAC並上調PSD-95。"
+            },
+            {
+                id: "3S", name: "3S貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "🌿",
+                region: "head",
+                claim: "苧麻根神經保護、減輕類澱粉蛋白毒性",
+                target: "清除自由基、保護星形膠質細胞、抑制神經發炎",
+                acupoints: "風池 (GB20)、完骨 (GB12)、太陽 (EX-HN5)",
+                meridians: "足少陽膽經、手少陽三焦經",
+                tcmPrinciple: "【平肝息風，清利頭目】風池穴位於枕骨下緣，為風斜入侵與頭部氣血匯聚之樞紐。貼敷風池能通暢椎動脈供血，並透過枕大神經刺激減輕腦內過氧化應激，降低Aβ毒性對神經膠質細胞之損害。",
+                canvasPoints: [
+                    { name: "風池 (GB20)", x: 275, y: 110, side: "back" },
+                    { name: "完骨 (GB12)", x: 325, y: 110, side: "back" },
+                    { name: "太陽 (EX-HN5)", x: 340, y: 92, side: "side" }
+                ],
+                monomers: [
+                    { name: "綠原酸", formula: "C16H18O9", source: "苧麻根" },
+                    { name: "咖啡酸", formula: "C9H8O4", source: "苧麻根" },
+                    { name: "奎寧酸", formula: "C7H12O6", source: "苧麻根" },
+                    { name: "齊墩果酸", formula: "C30H48O3", source: "苧麻根" },
+                    { name: "19-α-羥基熊果酸", formula: "C30H48O4", source: "苧麻根" },
+                    { name: "β-谷甾醇", formula: "C29H50O", source: "苧麻根" }
+                ],
+                desc: "以苧麻根天然萃取活性單體為核心，針對氧化壓力誘導之退行性神經突觸退化進行修復。綠原酸抑制AChE活性與Aβ過氧化，齊墩果酸阻斷NF-κB核易位。"
+            },
+            {
+                id: "特A", name: "特A貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "⚡",
+                region: "head",
+                claim: "高穿透性突觸再生與神經網絡激發",
+                target: "天然 HDAC2 抑制、PAFR 拮抗、單胺系統與 5-HT1A 調節",
+                acupoints: "百會 (GV20)、四神聰 (EX-HN1)、神門 (HT7)",
+                meridians: "督脈、手少陰心經",
+                tcmPrinciple: "【心腦相通，開竅啟閉】百會配合頭頂四神聰能顯著提升中樞神經興奮性；輔以手腕神門穴（心經原穴）貼敷，實現「心主神明，腦為髓海」之經典心腦共治。木犀草素與CBD可透過皮下神經叢快速傳導，調節5-HT系統與促進神經網絡重構。",
+                canvasPoints: [
+                    { name: "百會 (GV20)", x: 300, y: 55, side: "top" },
+                    { name: "四神聰 (EX-HN1)", x: 300, y: 65, side: "top" },
+                    { name: "神門 (HT7)", x: 215, y: 260, side: "wrist" }
+                ],
+                monomers: [
+                    { name: "木犀草素", formula: "C15H10O6", source: "金銀花、菊花" },
+                    { name: "銀杏內酯B", formula: "C20H24O10", source: "銀杏葉" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" },
+                    { name: "青藤鹼", formula: "C19H23NO4", source: "青風藤" },
+                    { name: "大麻二酚 (CBD)", formula: "C21H30O2", source: "火麻仁" },
+                    { name: "遠志皂苷元", formula: "C30H45ClO6", source: "遠志" }
+                ],
+                desc: "結合高細胞膜穿越力分子。木犀草素作為天然HDAC2抑制劑促進突觸蛋白轉錄；銀杏內酯B拮抗PAF受體改善腦灌注；CBD調節5-HT1A重塑海馬迴。"
+            },
+            {
+                id: "智慧", name: "智慧貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "💡",
+                region: "limbs",
+                claim: "益智醒腦、提升學習記憶長時程增強",
+                target: "激活 PKA/CREB 通路、促進星形膠質細胞神經營養因子分泌",
+                acupoints: "印堂 (EX-HN3)、太陽 (EX-HN5)、足三里 (ST36)",
+                meridians: "督脈、足陽明胃經",
+                tcmPrinciple: "【脾胃健旺，清陽升騰】印堂醒腦開竅，足三里為胃經合穴與強壯要穴。中醫認為「脾胃為後天之本」，足三里貼敷經由胃經氣血上輸於頭，能增強腦部能量代謝與神經營養因子 (BDNF/GDNF) 合成分泌。",
+                canvasPoints: [
+                    { name: "印堂 (EX-HN3)", x: 300, y: 92, side: "front" },
+                    { name: "太陽 (EX-HN5)", x: 340, y: 92, side: "side" },
+                    { name: "足三里 (ST36)", x: 275, y: 320, side: "leg" }
+                ],
+                monomers: [
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" },
+                    { name: "遠志苷元", formula: "C36H56O12", source: "遠志" },
+                    { name: "β-細辛醚", formula: "C12H16O3", source: "石菖蒲" },
+                    { name: "黃芩苷", formula: "C21H18O11", source: "黃芩" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" }
+                ],
+                desc: "重組「聰明湯」與「開心散」活性單體。人參皂苷Rg1活化PKA/CREB促進長期記憶；β-細辛醚高效穿越血腦屏障誘導GDNF與BDNF分泌。"
+            },
+            {
+                id: "眼睛", name: "眼睛貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "👁️",
+                region: "head",
+                claim: "視網膜神經節保護與血-視網膜屏障修復",
+                target: "吸收藍光抗光損傷、修復 BRB 緊密連接、改善脈絡膜微循環",
+                acupoints: "攢竹 (BL2)、太陽 (EX-HN5)、風池 (GB20)",
+                meridians: "足太陽膀胱經、足少陽膽經",
+                tcmPrinciple: "【五臟六腑之精氣皆上注於目】攢竹穴位於眉頭，太陽位於顳側，屬膀胱經與膽經交會處。眼周貼敷可直接促進脈絡膜與視網膜微血管網血液循環，改善眼底神經節細胞供氧供養。",
+                canvasPoints: [
+                    { name: "攢竹 (BL2)", x: 290, y: 90, side: "eye" },
+                    { name: "太陽 (EX-HN5)", x: 340, y: 92, side: "eye" },
+                    { name: "風池 (GB20)", x: 275, y: 110, side: "back" }
+                ],
+                monomers: [
+                    { name: "玉米黃素", formula: "C40H56O2", source: "枸杞子" },
+                    { name: "木犀草素", formula: "C15H10O6", source: "菊花" },
+                    { name: "丹參酚酸B", formula: "C36H30O16", source: "丹參" },
+                    { name: "銀杏內酯B", formula: "C20H24O10", source: "銀杏葉" },
+                    { name: "小檗鹼", formula: "C20H18NO4+", source: "黃連" }
+                ],
+                desc: "保護視網膜神經節細胞(RGCs)。玉米黃素吸收藍光淬滅單線態氧；小檗鹼強化血-視網膜屏障(BRB)緊密連接蛋白表現，降低神經水腫。"
+            },
+            {
+                id: "健忘失智", name: "健忘失智貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "🧩",
+                region: "limbs",
+                claim: "阿茲海默症干預、抑制神經纖維纏結",
+                target: "高選擇性 AChE 抑制、阻斷 Aβ 寡聚體沉積、抑制 Tau 過度磷酸化",
+                acupoints: "百會 (GV20)、太溪 (KI3)、懸鐘 (GB39)",
+                meridians: "督脈、足少陰腎經、足少陽膽經",
+                tcmPrinciple: "【腎主骨生髓，腦為髓海】太溪為腎經原穴，懸鐘為「髓會」。阿茲海默症在現代與中醫學均歸因於髓海空虛與神機失用。貼敷太溪與懸鐘能填精補髓，配合百會穴，由下而上激發腦部自噬清除機制。",
+                canvasPoints: [
+                    { name: "百會 (GV20)", x: 300, y: 55, side: "top" },
+                    { name: "太溪 (KI3)", x: 280, y: 380, side: "ankle" },
+                    { name: "懸鐘 (GB39)", x: 320, y: 360, side: "ankle" }
+                ],
+                monomers: [
+                    { name: "石杉鹼甲", formula: "C15H18N2O", source: "蛇足石杉" },
+                    { name: "遠志皂苷元", formula: "C30H45ClO6", source: "遠志" },
+                    { name: "毛蕊花糖苷", formula: "C29H36O15", source: "肉蓯蓉" },
+                    { name: "丹參酮IIA", formula: "C19H18O3", source: "丹參" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" },
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" }
+                ],
+                desc: "全面干預阿茲海默症三大病理。石杉鹼甲強效可逆抑制AChE；薑黃素與遠志皂苷元抑制GSK-3β以減少Tau磷酸化，並促進Aβ斑塊清除。"
+            },
+            {
+                id: "解壓", name: "解壓貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "🧘",
+                region: "limbs",
+                claim: "緩解慢性壓力與焦慮、修復應激突觸萎縮",
+                target: "調節 HPA 軸負反饋、平衡單胺神經傳導、促進 BDNF 生成",
+                acupoints: "太衝 (LR3)、內關 (PC6)、神門 (HT7)",
+                meridians: "足厥陰肝經、手厥陰心包經、手少陰心經",
+                tcmPrinciple: "【疏肝理氣，寬胸寧心】太衝為肝經原穴，能平肝熄風、解鬱開結；內關為心包經絡穴，寬胸理氣。太衝配內關貼敷能調暢全身氣機，透過迷走神經與脊髓反射壓抑過活躍之 HPA 軸，平撫焦慮情緒。",
+                canvasPoints: [
+                    { name: "太衝 (LR3)", x: 280, y: 395, side: "foot" },
+                    { name: "內關 (PC6)", x: 215, y: 240, side: "arm" },
+                    { name: "神門 (HT7)", x: 215, y: 260, side: "wrist" }
+                ],
+                monomers: [
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" },
+                    { name: "木犀草素", formula: "C15H10O6", source: "金銀花" },
+                    { name: "遠志皂苷元", formula: "C30H45ClO6", source: "遠志" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" }
+                ],
+                desc: "調節HPA軸功能紊亂。天麻素提升中樞GABA濃度並平抑下丘腦放電；人參皂苷Rg1阻斷高皮質醇應激對海馬神經幹細胞的抑制。"
+            },
+            {
+                id: "睡眠", name: "睡眠貼片", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "🌙",
+                region: "limbs",
+                claim: "改善睡眠架構、縮短入睡潛伏期",
+                target: "GABAA 受體正向別構調節、下調促醒神經遞質、修復睡眠微環境",
+                acupoints: "湧泉 (KI1)、安眠 (EX-HN16)、神門 (HT7)、三陰交 (SP6)",
+                meridians: "足少陰腎經、經外奇穴、足太陰脾經",
+                tcmPrinciple: "【引火歸元，心腎相交】湧泉位於足底，為腎經井穴。夜間貼敷湧泉能將上浮之虛火引導下行，促進心火降、腎水升（心腎相交）；結合神門與安眠穴，加強 GABA 中樞抑制作用，誘導深度睡眠。",
+                canvasPoints: [
+                    { name: "湧泉 (KI1)", x: 300, y: 405, side: "sole" },
+                    { name: "安眠 (EX-HN16)", x: 335, y: 110, side: "neck" },
+                    { name: "神門 (HT7)", x: 215, y: 260, side: "wrist" },
+                    { name: "三陰交 (SP6)", x: 280, y: 350, side: "leg" }
+                ],
+                monomers: [
+                    { name: "酸棗仁皂苷A", formula: "C52H84O21", source: "酸棗仁" },
+                    { name: "斯皮諾素", formula: "C28H32O15", source: "酸棗仁" },
+                    { name: "遠志DISS", formula: "C36H42O19", source: "遠志" },
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "厚朴酚", formula: "C18H18O2", source: "厚朴" },
+                    { name: "黃芩素", formula: "C15H10O5", source: "黃芩" },
+                    { name: "芍藥苷", formula: "C23H28O11", source: "白芍" }
+                ],
+                desc: "增強抑制性神經傳導。酸棗仁皂苷A與厚朴酚作為GABAA受體正向別構調節劑促進NREM睡眠；遠志DISS拮抗食慾素(Orexin)受體。"
+            },
+            {
+                id: "帕金森", name: "帕金森氏症貼布", category: "brain", categoryName: "腦神經與認知情緒調節", icon: "🦾",
+                region: "limbs",
+                claim: "補充多巴胺前驅物、促進病理蛋白自噬",
+                target: "轉化為多巴胺補足遞質、誘導溶酶體自噬清除 α-突觸核蛋白",
+                acupoints: "太衝 (LR3)、合谷 (LI4)、陽陵泉 (GB34)",
+                meridians: "足厥陰肝經、手陽明大腸經、足少陽膽經",
+                tcmPrinciple: "【開四關，熄肝風，舒筋脈】太衝與合谷合稱「四關穴」，為調暢全身氣血與平熄內風之要穴；陽陵泉為「筋會」。貼敷陽陵泉能緩解肌張力過高與震顫，合谷太衝配合則促進黑質多巴胺網絡神經修復。",
+                canvasPoints: [
+                    { name: "太衝 (LR3)", x: 280, y: 395, side: "foot" },
+                    { name: "合谷 (LI4)", x: 200, y: 245, side: "hand" },
+                    { name: "陽陵泉 (GB34)", x: 325, y: 310, side: "knee" }
+                ],
+                monomers: [
+                    { name: "左旋多巴", formula: "C9H11NO4", source: "黧豆" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" },
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "鉤藤鹼", formula: "C22H28N2O4", source: "鉤藤" },
+                    { name: "EGCG", formula: "C22H18O11", source: "綠茶" }
+                ],
+                desc: "左旋多巴跨越BBB轉化為多巴胺；鉤藤鹼與薑黃素透過抑制mTOR誘導自噬-溶酶體途徑，特異性清除聚集之α-突觸核蛋白。"
+            },
+            {
+                id: "1A", name: "1A貼布", category: "bone", categoryName: "骨傷與疼痛退化管理", icon: "🩹",
+                region: "limbs",
+                claim: "跌打損傷散瘀止痛、微血管微循環疏通",
+                target: "5-LOX 抑制、多巴胺 D2 受體阻斷中樞鎮痛、TRPM8 促滲",
+                acupoints: "阿是穴 (痛點局部)、血海 (SP10)、膈俞 (BL17)",
+                meridians: "阿是穴、足太陰脾經、足太陽膀胱經",
+                tcmPrinciple: "【以痛為輸，活血化瘀】阿是穴為損傷局部直接貼敷點，配合血海與膈俞（血會膈俞）。龍腦發揮TRPM8促滲開竅，延胡索乙素阻斷局部神經痛覺傳導，迅速消腫止痛、促進瘀血吸收。",
+                canvasPoints: [
+                    { name: "阿是穴 (痛點)", x: 310, y: 280, side: "local" },
+                    { name: "血海 (SP10)", x: 275, y: 285, side: "thigh" },
+                    { name: "膈俞 (BL17)", x: 315, y: 175, side: "back" }
+                ],
+                monomers: [
+                    { name: "三七皂苷R1", formula: "C47H80O18", source: "三七" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "三七" },
+                    { name: "延胡索乙素", formula: "C21H25NO4", source: "延胡索" },
+                    { name: "β-乳香酸", formula: "C30H48O3", source: "乳香" },
+                    { name: "沒藥酮", formula: "C15H20O", source: "沒藥" },
+                    { name: "龍腦 (冰片)", formula: "C10H18O", source: "龍腦香" }
+                ],
+                desc: "活血散瘀消腫定痛。延胡索乙素阻斷多巴胺D2受體鎮痛；β-乳香酸抑制5-LOX阻斷白三烯合成；龍腦激活TRPM8並瓦解角質層促滲。"
+            },
+            {
+                id: "補骨", name: "補骨貼片", category: "bone", categoryName: "骨傷與疼痛退化管理", icon: "🦴",
+                region: "back-腰",
+                claim: "防治骨質疏鬆、成骨分化與抑制蝕骨",
+                target: "植物雌激素樣作用、活化 BMP-2/Smad4 軸、下調 RANKL 表達",
+                acupoints: "腎俞 (BL23)、命門 (GV4)、大杼 (BL11)",
+                meridians: "足太陽膀胱經、督脈",
+                tcmPrinciple: "【壯腎陽，強骨髓】腎俞為腎氣輸注之處，大杼為「骨會」。腰部腎俞與命門貼敷淫羊藿苷與補骨脂素，能溫補命門之火，刺激骨膜神經血管網，活化 BMP-2 途徑，促進成骨細胞增殖與骨鹽沉積。",
+                canvasPoints: [
+                    { name: "腎俞 (BL23)", x: 315, y: 210, side: "back" },
+                    { name: "命門 (GV4)", x: 300, y: 210, side: "back" },
+                    { name: "大杼 (BL11)", x: 315, y: 150, side: "back" }
+                ],
+                monomers: [
+                    { name: "淫羊藿苷", formula: "C33H40O15", source: "淫羊藿" },
+                    { name: "補骨脂素", formula: "C11H6O3", source: "補骨脂" },
+                    { name: "柚皮苷", formula: "C27H32O14", source: "骨碎補" }
+                ],
+                desc: "調節成骨與蝕骨動態平衡。淫羊藿苷活化BMP-2/Smad4促進鈣結節形成並下調RANKL；補骨脂素提高血清骨鈣素促進新骨礦化。"
+            },
+            {
+                id: "NS", name: "NS貼片", category: "bone", categoryName: "骨傷與疼痛退化管理", icon: "⏳",
+                region: "chest-abdomen",
+                claim: "兼顧骨傷軟組織修復與染色體端粒抗衰",
+                target: "活化 TERT 端粒酶、清除自由基、促進骨骼與血管內皮再生",
+                acupoints: "關元 (CV4)、氣海 (CV6)、足三里 (ST36)",
+                meridians: "任脈、足陽明胃經",
+                tcmPrinciple: "【培元固本，大補元氣】關元與氣海為下丹田所在，任脈要穴。在此處貼敷環黃芪醇 (CAG) 能大補先天元氣，透過下腹部脊髓節段神經反射上調 TERT 端粒酶基因表達，加速組織再生與抗衰老。",
+                canvasPoints: [
+                    { name: "關元 (CV4)", x: 300, y: 220, side: "abdomen" },
+                    { name: "氣海 (CV6)", x: 300, y: 205, side: "abdomen" },
+                    { name: "足三里 (ST36)", x: 275, y: 320, side: "leg" }
+                ],
+                monomers: [
+                    { name: "環黃芪醇 (CAG)", formula: "C30H50O5", source: "黃芪" },
+                    { name: "黃芪甲苷IV", formula: "C41H68O14", source: "黃芪" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" },
+                    { name: "丹參酮IIA", formula: "C19H18O3", source: "丹參" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" }
+                ],
+                desc: "結合創傷修復與端粒抗衰老。環黃芪醇(CAG)為天然端粒酶活化劑，顯著上調TERT基因表達；人參皂苷Rg1與丹參酮IIA促進血管新生。"
+            },
+            {
+                id: "S3", name: "S3貼布", category: "visceral", categoryName: "臟腑機能與下焦代謝", icon: "🦠",
+                region: "chest-abdomen",
+                claim: "藉由菌-腸-腦軸重塑微生態與神經營養",
+                target: "富集雙歧桿菌與 AKK 菌、提升短鏈脂肪酸（SCFAs）、迷走神經信號傳遞",
+                acupoints: "中脘 (CV12)、天樞 (ST25)、足三里 (ST36)",
+                meridians: "任脈、足陽明胃經",
+                tcmPrinciple: "【調理脾胃，通腑化濁】天樞為大腸募穴，中脘為胃募與腑會。臍周與腹部貼敷能直接作用於腸道腸神經系統 (ENS)，促進短鏈脂肪酸 (SCFAs) 合成，並經由迷走神經向中樞傳遞神經營養信號。",
+                canvasPoints: [
+                    { name: "中脘 (CV12)", x: 300, y: 175, side: "abdomen" },
+                    { name: "天樞 (ST25)", x: 280, y: 195, side: "abdomen" },
+                    { name: "足三里 (ST36)", x: 275, y: 320, side: "leg" }
+                ],
+                monomers: [
+                    { name: "小檗鹼", formula: "C20H18NO4+", source: "黃連" },
+                    { name: "薑黃素", formula: "C21H20O6", source: "薑黃" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" },
+                    { name: "葛根素", formula: "C21H20O9", source: "葛根" },
+                    { name: "梔子苷", formula: "C17H24O10", source: "梔子" },
+                    { name: "淫羊藿苷", formula: "C33H40O15", source: "淫羊藿" }
+                ],
+                desc: "依據菌-腸-腦軸理論。小檗鹼增加AKK菌與雙歧桿菌並強化ZO-1蛋白；薑黃素提升短鏈脂肪酸(SCFAs)生成，經迷走神經激發腦BDNF。"
+            },
+            {
+                id: "新腦血管", name: "新腦血管貼布", category: "visceral", categoryName: "臟腑機能與下焦代謝", icon: "🫀",
+                region: "chest-abdomen",
+                claim: "心腦血管缺血保護與神經血管單元偶聯",
+                target: "鈣通道拮抗、抗血小板聚集、活化 Nrf2/HO-1 軸、促進內皮新生",
+                acupoints: "心俞 (BL15)、內關 (PC6)、膻中 (CV17)",
+                meridians: "足太陽膀胱經、手厥陰心包經、任脈",
+                tcmPrinciple: "【通暢心脈，行氣活血】膻中為「氣會」，內關通心包脈。貼敷膻中與內關能舒張冠狀動脈與腦血管，川芎嗪與丹參酮IIA 經由皮下神經叢反射改善心肌與腦組織缺血再灌注損傷。",
+                canvasPoints: [
+                    { name: "膻中 (CV17)", x: 300, y: 155, side: "chest" },
+                    { name: "內關 (PC6)", x: 215, y: 240, side: "arm" },
+                    { name: "心俞 (BL15)", x: 315, y: 165, side: "back" }
+                ],
+                monomers: [
+                    { name: "川芎嗪", formula: "C8H12N2", source: "川芎" },
+                    { name: "丹參酮IIA", formula: "C19H18O3", source: "丹參" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "三七" },
+                    { name: "天麻素", formula: "C13H18O7", source: "天麻" },
+                    { name: "黃芩苷", formula: "C21H18O11", source: "黃芩" },
+                    { name: "肉桂醛", formula: "C9H8O", source: "肉桂" }
+                ],
+                desc: "保護神經-微血管單元。川芎嗪拮抗鈣通道抑制鈣超載；人參皂苷Rg1誘導VEGF表達推動缺血周邊微血管新生。"
+            },
+            {
+                id: "膽腎", name: "膽腎貼片", category: "visceral", categoryName: "臟腑機能與下焦代謝", icon: "💧",
+                region: "back-腰",
+                claim: "利膽溶石、鹼化尿液與物理沖刷排石",
+                target: "降低膽汁膽固醇飽和度、抑制草酸鈣成核聚集、鬆弛泌尿道平滑肌",
+                acupoints: "膽俞 (BL19)、腎俞 (BL23)、日月 (GB24)、京門 (GB25)",
+                meridians: "足太陽膀胱經、足少陽膽經",
+                tcmPrinciple: "【俞募配穴，疏膽利尿】膽俞與日月（膽之俞募），腎俞與京門（腎之俞募）。採用經典「俞募配穴法」於腰脅部貼敷，能直接解痙鬆弛膽管與輸尿管平滑肌，促進結石排出與減輕絞痛。",
+                canvasPoints: [
+                    { name: "膽俞 (BL19)", x: 315, y: 190, side: "back" },
+                    { name: "腎俞 (BL23)", x: 315, y: 210, side: "back" },
+                    { name: "日月 (GB24)", x: 330, y: 185, side: "side" },
+                    { name: "京門 (GB25)", x: 330, y: 205, side: "side" }
+                ],
+                monomers: [
+                    { name: "槲皮素", formula: "C15H10O7", source: "金錢草" },
+                    { name: "山奈酚", formula: "C15H10O6", source: "金錢草" },
+                    { name: "熊去氧膽酸", formula: "C24H40O4", source: "牛膽/熊膽" },
+                    { name: "車前苷", formula: "C29H36O16", source: "車前草" },
+                    { name: "茴香腦", formula: "C10H12O", source: "茴香" }
+                ],
+                desc: "雙重利膽與排石。槲皮素抑制草酸鈣晶體成核；熊去氧膽酸使膽固醇微膠粒化促進結石溶解；茴香腦鬆弛平滑肌解痙。"
+            },
+            {
+                id: "前列腺", name: "前列腺貼布", category: "visceral", categoryName: "臟腑機能與下焦代謝", icon: "🛡️",
+                region: "chest-abdomen",
+                claim: "抑制良性攝護腺增生、減輕下尿路發炎",
+                target: "5α-還原酶抑制、拮抗雄激素受體（AR）、下調 NF-κB 促炎反應",
+                acupoints: "關元 (CV4)、中極 (CV3)、氣海 (CV6)",
+                meridians: "任脈 (膀胱募穴中極)",
+                tcmPrinciple: "【清熱利濕，溫通下焦】中極為膀胱之募穴，關元為小腸募穴。貼敷下腹部中極與關元，藥物成分能透過盆腔神經節段與皮下微循環直達攝護腺組織，抑制5α-還原酶並改善排尿困難。",
+                canvasPoints: [
+                    { name: "關元 (CV4)", x: 300, y: 220, side: "abdomen" },
+                    { name: "中極 (CV3)", x: 300, y: 230, side: "abdomen" },
+                    { name: "氣海 (CV6)", x: 300, y: 205, side: "abdomen" }
+                ],
+                monomers: [
+                    { name: "β-谷甾醇", formula: "C29H50O", source: "南瓜籽" },
+                    { name: "咖啡酸苯乙酯", formula: "C17H16O4", source: "蜂膠" },
+                    { name: "淫羊藿苷", formula: "C33H40O15", source: "淫羊藿" },
+                    { name: "苦參鹼", formula: "C15H24N2O", source: "苦參" },
+                    { name: "番茄紅素", formula: "C40H56", source: "番茄" }
+                ],
+                desc: "多途徑干預BPH與前列腺炎。β-谷甾醇競爭性抑制5α-還原酶阻斷DHT轉化；木犀草素下調雄激素受體(AR)活性；番茄紅素清除過氧化物。"
+            },
+            {
+                id: "感冒", name: "感冒貼片", category: "immune", categoryName: "免疫排毒與基礎營養", icon: "🛡️",
+                region: "back-腰",
+                claim: "阻斷呼吸道病毒入侵與抑制感染性發炎",
+                target: "抑制新冠 3CLpro 蛋白酶、阻斷刺突蛋白與 ACE2 結合",
+                acupoints: "大椎 (GV14)、肺俞 (BL13)、風門 (BL12)",
+                meridians: "督脈、足太陽膀胱經",
+                tcmPrinciple: "【宣肺解表，清熱禦毒】大椎為手足三陽經與督脈之交會穴，為解表清熱第一要穴；肺俞與風門為風邪易侵之門戶。貼敷大椎與肺俞能迅速激發提昇上呼吸道黏膜免疫力 (IgA)，阻斷病毒入侵。",
+                canvasPoints: [
+                    { name: "大椎 (GV14)", x: 300, y: 130, side: "back" },
+                    { name: "肺俞 (BL13)", x: 315, y: 155, side: "back" },
+                    { name: "風門 (BL12)", x: 315, y: 142, side: "back" }
+                ],
+                monomers: [
+                    { name: "黃芩素", formula: "C15H10O5", source: "黃芩" },
+                    { name: "木犀草素", formula: "C15H10O6", source: "金銀花" }
+                ],
+                desc: "廣譜抗病毒與防範腦霧後遺症。黃芩素作為SARS-CoV-2之3CLpro蛋白酶強效非共價抑制劑；木犀草素競爭性阻斷Spike與ACE2受體對接。"
+            },
+            {
+                id: "免疫", name: "免疫貼片", category: "immune", categoryName: "免疫排毒與基礎營養", icon: "⚖️",
+                region: "limbs",
+                claim: "雙向免疫調節（抗低下與抑制過激風暴）",
+                target: "促進淋巴細胞增殖 / 阻斷 NF-κB 與 IL-2、調控 Th17/Treg 平衡",
+                acupoints: "足三里 (ST36)、脾俞 (BL20)、腎俞 (BL23)",
+                meridians: "足陽明胃經、足太陽膀胱經",
+                tcmPrinciple: "【扶正固本，雙向調節】脾俞補後天，腎俞固先天。足三里為強壯免疫第一穴。貼敷此三穴能維持 Th17/Treg 細胞因子動態平衡，免疫低下時提升 NK 細胞活性，過激時平息發炎風暴。",
+                canvasPoints: [
+                    { name: "足三里 (ST36)", x: 275, y: 320, side: "leg" },
+                    { name: "脾俞 (BL20)", x: 315, y: 198, side: "back" },
+                    { name: "腎俞 (BL23)", x: 315, y: 210, side: "back" }
+                ],
+                monomers: [
+                    { name: "黃芪甲苷IV", formula: "C41H68O14", source: "黃芪" },
+                    { name: "靈芝酸A", formula: "C30H44O7", source: "靈芝" },
+                    { name: "雷公藤內酯", formula: "C20H24O6", source: "雷公藤" },
+                    { name: "青蒿素", formula: "C15H22O5", source: "黃花蒿" },
+                    { name: "人參皂苷Rg1", formula: "C42H72O14", source: "人參" }
+                ],
+                desc: "展現雙向免疫平衡。低時藉黃芪甲苷IV與Rg1促進T/B淋巴細胞增殖；過激時靠雷公藤內酯極低濃度下抑制NF-κB與IL-2以平息發炎風暴。"
+            },
+            {
+                id: "排毒", name: "排毒貼片", category: "immune", categoryName: "免疫排毒與基礎營養", icon: "🧹",
+                region: "limbs",
+                claim: "活化肝臟解毒酵素、清除毒素與促進代謝",
+                target: "活化 Phase II 代謝酶（GST）、保護肝細胞膜、滲濕利水排泄",
+                acupoints: "肝俞 (BL18)、太衝 (LR3)、陰陵泉 (SP9)",
+                meridians: "足太陽膀胱經、足厥陰肝經、足太陰脾經",
+                tcmPrinciple: "【疏肝利膽，滲濕排毒】肝俞配太衝（俞原相配）能促進肝臟氣血流暢與二相解毒酶 GST 活化；陰陵泉為脾經合穴，專司滲濕利水，促進體內代謝廢物與毒素加速排出。",
+                canvasPoints: [
+                    { name: "肝俞 (BL18)", x: 315, y: 182, side: "back" },
+                    { name: "太衝 (LR3)", x: 280, y: 395, side: "foot" },
+                    { name: "陰陵泉 (SP9)", x: 275, y: 315, side: "leg" }
+                ],
+                monomers: [
+                    { name: "綠原酸", formula: "C16H18O9", source: "金銀花" },
+                    { name: "小檗鹼", formula: "C20H18NO4+", source: "黃連" },
+                    { name: "甘草酸", formula: "C42H62O16", source: "甘草" },
+                    { name: "茯苓酸", formula: "C33H52O5", source: "茯苓" },
+                    { name: "穀胱甘肽 (GSH)", formula: "C10H17N3O6S", source: "內源輔助" }
+                ],
+                desc: "保肝與加速代謝物排泄。甘草酸調節P450酶減輕化毒損害；茯苓酸增加腎小球濾過率；穀胱甘肽活化 Phase II 結合代謝酵素 GST。"
+            },
+            {
+                id: "營養", name: "營養貼片", category: "immune", categoryName: "免疫排毒與基礎營養", icon: "🥗",
+                region: "limbs",
+                claim: "經皮補給人體九種必需胺基酸",
+                target: "激活 mTOR 通路促進蛋白質合成、提供神經遞質合成前驅物",
+                acupoints: "脾俞 (BL20)、胃俞 (BL21)、足三里 (ST36)",
+                meridians: "足太陽膀胱經、足陽明胃經",
+                tcmPrinciple: "【運化水谷，充養氣血】脾俞與胃俞為脾胃之氣輸注之所。貼敷足三里與脾胃俞能大幅增強胃腸道運化吸收功能，協助經皮吸收之九種必需胺基酸更高效進入全身蛋白質合成代謝。",
+                canvasPoints: [
+                    { name: "脾俞 (BL20)", x: 315, y: 198, side: "back" },
+                    { name: "胃俞 (BL21)", x: 315, y: 204, side: "back" },
+                    { name: "足三里 (ST36)", x: 275, y: 320, side: "leg" }
+                ],
+                monomers: [
+                    { name: "白胺酸", formula: "C6H13NO2", source: "草本水解" },
+                    { name: "異白胺酸", formula: "C6H13NO2", source: "草本水解" },
+                    { name: "纈胺酸", formula: "C5H11NO2", source: "草本水解" },
+                    { name: "色胺酸", formula: "C11H12N2O2", source: "草本水解" },
+                    { name: "苯丙胺酸", formula: "C9H11NO2", source: "草本水解" }
+                ],
+                desc: "經皮基質穩定釋放無法自行合成之必需胺基酸。支鏈胺基酸(BCAA)於骨骼肌參與代謝並啟動mTOR促進蛋白合成；色胺酸為5-HT合成前驅物。"
+            }
+        ];
+
+        // Hub Monomers Summary
+        const hubMonomers = [
+            { name: "人參皂苷 Rg1", formula: "C42H72O14", count: 10, patches: ["1A貼布","2B貼布","S3貼布","特A貼布","智慧貼布","新腦血管貼布","健忘失智貼布","解壓貼布","免疫貼片","NS貼片"], pathways: "激活 PKA/CREB 通路；上調 BDNF-TrkB 訊號；活化 PI3K/Akt/mTOR 軸", phenotype: "促進海馬神經新生、增強突觸可塑性 (LTP)、刺激血管新生、抗細胞衰老" },
+            { name: "天麻素", formula: "C13H18O7", count: 7, patches: ["2B貼布","智慧貼布","新腦血管貼布","健忘失智貼布","解壓貼布","睡眠貼片","帕金森氏症貼布"], pathways: "激活 Nrf2/HO-1 通路；調節 GABAA 受體；抑制過度谷胺酸釋放", phenotype: "拮抗興奮性神經毒性、清除腦自由基、抗焦慮助眠、息風止痙" },
+            { name: "薑黃素", formula: "C21H20O6", count: 10, patches: ["S3貼布","特A貼布","智慧貼布","健忘失智貼布","解壓貼布","膽腎貼片","前列腺貼布","帕金森氏症貼布","免疫貼片","NS貼片"], pathways: "抑制 NF-κB/IKK 激酶；活化 SIRT1 長壽蛋白；直接結合 Aβ 與 α-synuclein", phenotype: "廣譜強效抗炎、抑制病理蛋白聚集、活化腸腦軸 SCFAs 生成" },
+            { name: "木犀草素", formula: "C15H10O6", count: 7, patches: ["特A貼布","眼睛貼布","解壓貼布","感冒貼片","膽腎貼片","前列腺貼布","免疫貼片"], pathways: "天然 HDAC2 抑制劑；競爭性抑制 SARS-CoV-2 Spike/ACE2 結合；拮抗 AR", phenotype: "促進突觸表觀遺傳活化、抗病毒複製、平息過敏與發炎風暴、保護視網膜" },
+            { name: "黃芩素 / 黃芩苷", formula: "C15H10O5 / C21H18O11", count: 7, patches: ["2B貼布","智慧貼布","新腦血管貼布","睡眠貼片","感冒貼片","前列腺貼布","NS貼片"], pathways: "Baicalein 抑制 3CLpro 蛋白酶與 HDAC；Baicalin 修復血腦屏障", phenotype: "抗病毒複製、降低血腦屏障通透性、抑制神經炎性凋亡" },
+            { name: "丹參酮 IIA", formula: "C19H18O3", count: 4, patches: ["新腦血管貼布","健忘失智貼布","前列腺貼布","NS貼片"], pathways: "激活 Nrf2/HO-1 軸；抑制細胞間黏附分子 ICAM-1", phenotype: "保護微血管內皮、抗心腦缺血再灌注損傷、消除微血栓" },
+            { name: "淫羊藿苷", formula: "C33H40O15", count: 4, patches: ["S3貼布","前列腺貼布","補骨貼片","NS貼片"], pathways: "植物雌激素效應；活化 BMP-2/Smad4 途徑；活化 NO-cGMP 軸", phenotype: "促進成骨細胞增殖骨礦化、改善微血管充血、重塑腸道微生態" },
+            { name: "小檗鹼", formula: "C20H18NO4+", count: 4, patches: ["S3貼布","眼睛貼布","新腦血管貼布","排毒貼片"], pathways: "活化 AMPK 能量代謝通路；保護緊密連接蛋白 ZO-1", phenotype: "修復腸黏膜屏障與血-視網膜屏障、降糖調脂、抑制微血管基底膜降解" }
+        ];
+
+        // Scatter plot TDDS data (MW vs LogP)
+        const tddsScatterData = [
+            { name: "龍腦 (Borneol)", x: 154.25, y: 2.7, status: "高滲透" },
+            { name: "川芎嗪 (TMP)", x: 136.20, y: 1.8, status: "高滲透" },
+            { name: "肉桂醛", x: 132.16, y: 1.9, status: "高滲透" },
+            { name: "補骨脂素", x: 186.16, y: 2.2, status: "高滲透" },
+            { name: "厚朴酚", x: 266.33, y: 4.2, status: "中等滲透" },
+            { name: "木犀草素", x: 286.24, y: 2.5, status: "高滲透" },
+            { name: "薑黃素", x: 368.38, y: 3.2, status: "中等滲透" },
+            { name: "淫羊藿苷", x: 676.66, y: 0.8, status: "阻障受阻" },
+            { name: "丹參酚酸B", x: 718.62, y: 1.8, status: "阻障受阻" },
+            { name: "人參皂苷Rg1", x: 800.01, y: 1.2, status: "阻障受阻" },
+            { name: "三七皂苷R1", x: 933.13, y: 0.5, status: "阻障受阻" },
+            { name: "酸棗仁皂苷A", x: 1207.37, y: 0.2, status: "阻障受阻" }
+        ];
+
+        // Global State Variables
+        let categoryChartInstance = null;
+        let topMonomersChartInstance = null;
+        let tddsScatterChartInstance = null;
+        let currentVisualPatch = patchesData[0];
+
+        // Initialize Application
+        document.addEventListener("DOMContentLoaded", () => {
+            renderPatchGrid(patchesData);
+            renderAcupointGrid(patchesData);
+            initCategoryChart();
+            initTopMonomersChart();
+            initHubSection();
+            initTddsChart();
+
+            // Initialize Acupoint Visualizer Engine
+            initAcupointVisualizer();
+
+            // Search listener
+            document.getElementById("globalSearch").addEventListener("input", (e) => {
+                const term = e.target.value.trim().toLowerCase();
+                if (!term) {
+                    renderPatchGrid(patchesData);
+                    renderAcupointGrid(patchesData);
+                    return;
+                }
+                const filtered = patchesData.filter(p => 
+                    p.name.toLowerCase().includes(term) ||
+                    p.claim.toLowerCase().includes(term) ||
+                    p.target.toLowerCase().includes(term) ||
+                    p.acupoints.toLowerCase().includes(term) ||
+                    p.meridians.toLowerCase().includes(term) ||
+                    p.tcmPrinciple.toLowerCase().includes(term) ||
+                    p.monomers.some(m => m.name.toLowerCase().includes(term) || m.formula.toLowerCase().includes(term))
+                );
+                renderPatchGrid(filtered);
+                renderAcupointGrid(filtered);
+            });
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.remove("border-b-2", "border-herbal-primary", "text-herbal-primary", "bg-white", "shadow-sm");
+                btn.classList.add("text-herbal-muted");
+            });
+            document.querySelectorAll(".tab-content").forEach(content => {
+                content.classList.add("hidden");
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.add("border-b-2", "border-herbal-primary", "text-herbal-primary", "bg-white", "shadow-sm");
+            activeBtn.classList.remove("text-herbal-muted");
+
+            const activeView = document.getElementById(`view-${tabName}`);
+            activeView.classList.remove("hidden");
+
+            if (tabName === 'acupoints') {
+                // Trigger canvas redraw to prevent sizing glitches
+                setTimeout(() => {
+                    drawSelectedPatchAcupoints(currentVisualPatch.id);
+                }, 50);
+            }
+        }
+
+        // Render Patch Grid Cards
+        function renderPatchGrid(data) {
+            const grid = document.getElementById("patchGrid");
+            grid.innerHTML = "";
+
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-8 text-center text-herbal-muted text-sm">無符合條件的貼布數據</div>`;
+                return;
+            }
+
+            data.forEach(patch => {
+                const card = document.createElement("div");
+                card.className = "bg-white border border-stone-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-herbal-secondary transition-all cursor-pointer flex flex-col justify-between";
+                card.onclick = () => openModal(patch);
+
+                const monomerBadges = patch.monomers.slice(0, 4).map(m => 
+                    `<span class="bg-stone-100 text-stone-700 text-[11px] px-2 py-0.5 rounded border border-stone-200 font-mono">${m.name}</span>`
+                ).join(" ");
+
+                const moreCount = patch.monomers.length > 4 ? `<span class="text-[10px] text-herbal-muted">+${patch.monomers.length - 4}</span>` : "";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl">${patch.icon}</span>
+                                <h3 class="font-bold text-herbal-primary text-base">${patch.name}</h3>
+                            </div>
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">${patch.categoryName.split("與")[0]}</span>
+                        </div>
+                        <p class="text-xs font-semibold text-herbal-neutral mb-1 line-clamp-1">${patch.claim}</p>
+                        <p class="text-[11px] text-amber-900 bg-amber-50/80 px-2 py-1 rounded border border-amber-200/60 mb-2 line-clamp-1">🎯 貼敷穴位：${patch.acupoints}</p>
+                        <p class="text-[11px] text-herbal-muted mb-3 line-clamp-2">${patch.target}</p>
+                    </div>
+                    <div class="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-1">
+                        ${monomerBadges} ${moreCount}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Render Acupoints Tab Cards
+        function renderAcupointGrid(data) {
+            const grid = document.getElementById("acupointGrid");
+            grid.innerHTML = "";
+
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-8 text-center text-herbal-muted text-sm">無符合條件的穴位貼敷數據</div>`;
+                return;
+            }
+
+            data.forEach(patch => {
+                const card = document.createElement("div");
+                card.className = "bg-white border border-stone-200 rounded-xl p-4 shadow-sm hover:border-amber-500 transition-all cursor-pointer flex flex-col justify-between";
+                card.onclick = () => {
+                    openModal(patch);
+                    drawSelectedPatchAcupoints(patch.id);
+                };
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between border-b border-stone-100 pb-2 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-2xl">${patch.icon}</span>
+                                <div>
+                                    <h3 class="font-bold text-herbal-primary text-base">${patch.name}</h3>
+                                    <span class="text-[10px] text-herbal-muted font-medium">${patch.claim}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">部位：${
+                                patch.region === 'head' ? '頭頸臉部' :
+                                patch.region === 'chest-abdomen' ? '胸腹前腹部' :
+                                patch.region === 'back-腰' ? '背腰督脈部' : '四肢遠端穴'
+                            }</span>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200/70">
+                                <span class="font-bold text-amber-950">🎯 推薦貼敷穴位：</span>
+                                <span class="font-semibold text-amber-900">${patch.acupoints}</span>
+                            </div>
+                            <div class="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
+                                <span class="font-bold text-herbal-neutral">🛣️ 對應經絡循行：</span>
+                                <span class="text-stone-700">${patch.meridians}</span>
+                            </div>
+                            <div class="p-2.5 bg-stone-50/50 rounded-lg border border-stone-100 text-stone-600 leading-relaxed text-[11px]">
+                                <span class="font-bold text-herbal-primary">💡 經絡與神經反射作用機制：</span>
+                                ${patch.tcmPrinciple}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
+                        <span class="text-herbal-muted font-mono">活性成分：${patch.monomers.map(m => m.name).slice(0,3).join(", ")}等</span>
+                        <span class="text-herbal-primary font-bold hover:underline">繪製穴位圖譜 &rarr;</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Initialize Acupoint Visualizer Controls
+        function initAcupointVisualizer() {
+            const select = document.getElementById("patchVisualSelect");
+            const quickContainer = document.getElementById("quickPatchBtns");
+            
+            select.innerHTML = "";
+            quickContainer.innerHTML = "";
+
+            patchesData.forEach(patch => {
+                // Populate Select Option
+                const opt = document.createElement("option");
+                opt.value = patch.id;
+                opt.textContent = `${patch.icon} ${patch.name} - ${patch.acupoints.split("、")[0]}等`;
+                select.appendChild(opt);
+
+                // Quick Buttons
+                const btn = document.createElement("button");
+                btn.className = "px-2 py-1 text-[11px] font-semibold bg-stone-700 hover:bg-amber-600 text-stone-200 hover:text-white rounded border border-stone-600 transition-colors";
+                btn.textContent = `${patch.icon} ${patch.name}`;
+                btn.onclick = () => {
+                    select.value = patch.id;
+                    drawSelectedPatchAcupoints(patch.id);
+                };
+                quickContainer.appendChild(btn);
+            });
+
+            // Draw default
+            drawSelectedPatchAcupoints("2B");
+        }
+
+        // Draw Acupoints and Meridian Paths on Canvas
+        function drawSelectedPatchAcupoints(patchId) {
+            const patch = patchesData.find(p => p.id === patchId) || patchesData[0];
+            currentVisualPatch = patch;
+
+            // Update Details Panel
+            document.getElementById("visualRegionTag").textContent = `對應區域: ${
+                patch.region === 'head' ? '頭頸臉部' :
+                patch.region === 'chest-abdomen' ? '胸腹前腹部' :
+                patch.region === 'back-腰' ? '背腰督脈部' : '四肢遠端/全身'
+            }`;
+
+            const detailsBox = document.getElementById("visDetailsBox");
+            detailsBox.innerHTML = `
+                <div class="flex items-center space-x-2 border-b border-stone-700 pb-2">
+                    <span class="text-2xl">${patch.icon}</span>
+                    <div>
+                        <div class="font-bold text-amber-300 text-sm">${patch.name}</div>
+                        <div class="text-[10px] text-stone-400">${patch.claim}</div>
+                    </div>
+                </div>
+                <div>
+                    <span class="font-bold text-amber-400">🎯 精確貼敷穴位：</span>
+                    <div class="text-stone-200 mt-0.5">${patch.acupoints}</div>
+                </div>
+                <div>
+                    <span class="font-bold text-teal-300">🛣️ 循行經絡傳導：</span>
+                    <div class="text-stone-300 mt-0.5">${patch.meridians}</div>
+                </div>
+                <div class="text-[11px] text-stone-400 border-t border-stone-700/80 pt-2 leading-normal">
+                    <span class="text-amber-200 font-semibold">💡 協同機制：</span>${patch.tcmPrinciple.substring(0, 110)}...
+                </div>
+            `;
+
+            // Canvas Drawing Logic
+            const canvas = document.getElementById("acupointCanvas");
+            const ctx = canvas.getContext("2d");
+            
+            // Clear Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Canvas Dimensions & Scaling
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Draw Background Grid
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x < w; x += 30) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            for (let y = 0; y < h; y += 30) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
+            // Draw Simplified Human Body Stylized Silhouette Outline
+            ctx.save();
+            ctx.strokeStyle = "rgba(92, 141, 117, 0.4)";
+            ctx.lineWidth = 2;
+            ctx.fillStyle = "rgba(45, 90, 76, 0.15)";
+
+            // Body Contour (Head, Shoulders, Arms, Torso, Legs)
+            ctx.beginPath();
+            // Head
+            ctx.arc(300, 80, 32, 0, Math.PI * 2);
+            // Neck
+            ctx.moveTo(288, 110); ctx.lineTo(288, 125);
+            ctx.moveTo(312, 110); ctx.lineTo(312, 125);
+            // Shoulders
+            ctx.moveTo(288, 125); ctx.lineTo(210, 150);
+            ctx.moveTo(312, 125); ctx.lineTo(390, 150);
+            // Arms
+            ctx.lineTo(195, 260); ctx.lineTo(215, 260); ctx.lineTo(245, 170); // Left arm
+            ctx.moveTo(390, 150); ctx.lineTo(405, 260); ctx.lineTo(385, 260); ctx.lineTo(355, 170); // Right arm
+            // Torso
+            ctx.moveTo(245, 170); ctx.lineTo(250, 240); ctx.lineTo(260, 270);
+            ctx.moveTo(355, 170); ctx.lineTo(350, 240); ctx.lineTo(340, 270);
+            // Legs
+            ctx.lineTo(340, 390); ctx.lineTo(315, 390); ctx.lineTo(305, 270); // Right leg
+            ctx.moveTo(260, 270); ctx.lineTo(260, 390); ctx.lineTo(285, 390); ctx.lineTo(295, 270); // Left leg
+            ctx.stroke();
+            ctx.fill();
+            ctx.restore();
+
+            // Draw Meridian Conduit Pathways (Dashed Golden Lines connecting points)
+            ctx.save();
+            ctx.strokeStyle = "rgba(217, 160, 91, 0.6)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 4]);
+
+            // Connect Points with Meridian Line
+            if (patch.canvasPoints && patch.canvasPoints.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(patch.canvasPoints[0].x, patch.canvasPoints[0].y);
+                for (let i = 1; i < patch.canvasPoints.length; i++) {
+                    ctx.lineTo(patch.canvasPoints[i].x, patch.canvasPoints[i].y);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Draw Acupoint Nodes with Glow and Labels
+            patch.canvasPoints.forEach((pt, index) => {
+                ctx.save();
+
+                // Glow Effect
+                ctx.shadowColor = "#F59E0B";
+                ctx.shadowBlur = 12;
+
+                // Pulsing Outer Ring
+                ctx.fillStyle = "rgba(245, 158, 11, 0.3)";
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 11, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Solid Core
+                ctx.fillStyle = "#F59E0B";
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner Highlight
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Text Label Offset Calculation
+                ctx.shadowBlur = 0;
+                ctx.font = "bold 12px sans-serif";
+                ctx.fillStyle = "#FDE68A";
+
+                let labelX = pt.x + 16;
+                let labelY = pt.y + 4;
+
+                if (pt.x > 320) {
+                    labelX = pt.x + 14;
+                } else if (pt.x < 280) {
+                    labelX = pt.x - ctx.measureText(pt.name).width - 14;
+                }
+
+                // Draw Label Background Badge
+                const txtWidth = ctx.measureText(pt.name).width;
+                ctx.fillStyle = "rgba(26, 46, 38, 0.85)";
+                ctx.strokeStyle = "rgba(245, 158, 11, 0.5)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(labelX - 4, labelY - 12, txtWidth + 8, 16, 4);
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Text
+                ctx.fillStyle = "#FDE68A";
+                ctx.fillText(pt.name, labelX, labelY);
+
+                ctx.restore();
+            });
+
+            // Overlay Patch Name Header on Canvas
+            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillText(`${patch.icon} ${patch.name} 體表穴位與經絡導引圖`, 20, 30);
+            ctx.font = "11px sans-serif";
+            ctx.fillStyle = "rgba(209, 213, 219, 0.8)";
+            ctx.fillText(`循行經絡: ${patch.meridians}`, 20, 48);
+        }
+
+        // Filter Grid by Category
+        function filterCategory(cat) {
+            document.querySelectorAll(".cat-filter-btn").forEach(btn => {
+                btn.classList.remove("bg-herbal-primary", "text-white");
+                btn.classList.add("bg-stone-100", "text-stone-700");
+            });
+            event.target.classList.remove("bg-stone-100", "text-stone-700");
+            event.target.classList.add("bg-herbal-primary", "text-white");
+
+            if (cat === "all") {
+                renderPatchGrid(patchesData);
+            } else {
+                const filtered = patchesData.filter(p => p.category === cat);
+                renderPatchGrid(filtered);
+            }
+        }
+
+        // Filter Acupoint Grid by Region
+        function filterAcupointRegion(reg) {
+            document.querySelectorAll(".acupoint-region-btn").forEach(btn => {
+                btn.classList.remove("bg-herbal-primary", "text-white");
+                btn.classList.add("bg-stone-100", "text-stone-700");
+            });
+            event.target.classList.remove("bg-stone-100", "text-stone-700");
+            event.target.classList.add("bg-herbal-primary", "text-white");
+
+            if (reg === "all") {
+                renderAcupointGrid(patchesData);
+            } else {
+                const filtered = patchesData.filter(p => p.region === reg);
+                renderAcupointGrid(filtered);
+            }
+        }
+
+        // Open Patch Detail Modal
+        function openModal(patch) {
+            document.getElementById("modalIcon").textContent = patch.icon;
+            document.getElementById("modalTitle").textContent = patch.name;
+            document.getElementById("modalCategory").textContent = patch.categoryName;
+            document.getElementById("modalClaim").textContent = patch.claim;
+            document.getElementById("modalTarget").textContent = patch.target;
+            document.getElementById("modalDetailDesc").textContent = patch.desc;
+
+            // TCM Modal Fields
+            document.getElementById("modalAcupoints").textContent = patch.acupoints;
+            document.getElementById("modalMeridians").textContent = patch.meridians;
+            document.getElementById("modalTcmPrinciple").textContent = patch.tcmPrinciple;
+
+            const mContainer = document.getElementById("modalMonomers");
+            mContainer.innerHTML = patch.monomers.map(m => `
+                <div class="bg-stone-50 border border-stone-200 p-2 rounded-lg flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-herbal-neutral">${m.name}</div>
+                        <div class="text-[10px] text-herbal-muted">來源: ${m.source}</div>
+                    </div>
+                    <div class="text-[11px] font-mono font-semibold text-herbal-primary bg-white px-2 py-0.5 rounded border border-stone-200">${m.formula}</div>
+                </div>
+            `).join("");
+
+            document.getElementById("patchModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("patchModal").classList.add("hidden");
+        }
+
+        // Chart 1: Domain Distribution Chart
+        function initCategoryChart() {
+            const ctx = document.getElementById("categoryChart").getContext("2d");
+            categoryChartInstance = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: ["腦神經與認知情緒 (9)", "骨傷與疼痛退化 (3)", "臟腑機能與下焦代謝 (4)", "免疫排毒與基礎營養 (4)"],
+                    datasets: [{
+                        data: [9, 3, 4, 4],
+                        backgroundColor: ["#2D5A4C", "#C86D51", "#5C8D75", "#D9A05B"],
+                        borderWidth: 2,
+                        borderColor: "#FFFFFF"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 2: Top Monomers Occurrence Chart
+        function initTopMonomersChart() {
+            const ctx = document.getElementById("topMonomersChart").getContext("2d");
+            topMonomersChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["人參皂苷Rg1", "薑黃素", "天麻素", "木犀草素", "黃芩素/苷", "丹參酮IIA", "淫羊藿苷", "小檗鹼"],
+                    datasets: [{
+                        label: "出現貼布款數",
+                        data: [10, 10, 7, 7, 7, 4, 4, 4],
+                        backgroundColor: "#5C8D75",
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 2 } },
+                        x: { ticks: { font: { size: 10 } } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Network Pharmacology Hub Initialization
+        function initHubSection() {
+            const selector = document.getElementById("hubSelector");
+            const tableBody = document.getElementById("hubTableBody");
+
+            selector.innerHTML = "";
+            tableBody.innerHTML = "";
+
+            hubMonomers.forEach((hub, index) => {
+                // Selector buttons
+                const btn = document.createElement("button");
+                btn.className = `px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${index === 0 ? 'bg-herbal-primary text-white border-herbal-primary' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'}`;
+                btn.textContent = `${hub.name} (${hub.count})`;
+                btn.onclick = (e) => {
+                    document.querySelectorAll("#hubSelector button").forEach(b => {
+                        b.classList.remove("bg-herbal-primary", "text-white", "border-herbal-primary");
+                        b.classList.add("bg-white", "text-stone-700", "border-stone-300");
+                    });
+                    btn.classList.remove("bg-white", "text-stone-700", "border-stone-300");
+                    btn.classList.add("bg-herbal-primary", "text-white", "border-herbal-primary");
+                    renderHubDetail(hub);
+                };
+                selector.appendChild(btn);
+
+                // Table rows
+                const row = document.createElement("tr");
+                row.className = "border-b border-stone-200 hover:bg-stone-50 transition-colors";
+                row.innerHTML = `
+                    <td class="p-3 font-bold text-herbal-primary border-r border-stone-200">${hub.name}</td>
+                    <td class="p-3 font-mono border-r border-stone-200">${hub.formula}</td>
+                    <td class="p-3 border-r border-stone-200">
+                        <div class="flex flex-wrap gap-1">
+                            ${hub.patches.map(p => `<span class="bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200 text-[10px]">${p}</span>`).join("")}
+                        </div>
+                    </td>
+                    <td class="p-3 border-r border-stone-200 text-[11px]">${hub.pathways}</td>
+                    <td class="p-3 text-[11px]">${hub.phenotype}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Initial active hub detail
+            renderHubDetail(hubMonomers[0]);
+        }
+
+        function renderHubDetail(hub) {
+            const card = document.getElementById("hubDetailCard");
+            card.innerHTML = `
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-stone-200 pb-3 mb-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🧬</span>
+                        <div>
+                            <h3 class="text-base font-bold text-herbal-primary">${hub.name}</h3>
+                            <span class="text-xs font-mono text-herbal-muted">化學式: ${hub.formula}</span>
+                        </div>
+                    </div>
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full w-fit">跨配方覆蓋率: ${hub.count} / 20 款貼布</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <div class="font-bold text-herbal-neutral mb-1">關鍵生化受體與訊息傳導通路：</div>
+                        <p class="text-stone-700 bg-white p-2.5 rounded-lg border border-stone-200 leading-relaxed">${hub.pathways}</p>
+                    </div>
+                    <div>
+                        <div class="font-bold text-herbal-neutral mb-1">跨疾病共享核心藥理表型：</div>
+                        <p class="text-stone-700 bg-white p-2.5 rounded-lg border border-stone-200 leading-relaxed">${hub.phenotype}</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="font-bold text-xs text-herbal-neutral mb-1">應用此單體之貼布清單：</div>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${hub.patches.map(p => `<span class="bg-emerald-50 text-emerald-800 font-semibold text-[11px] px-2 py-0.5 rounded border border-emerald-200">${p}</span>`).join("")}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Scatter Chart: TDDS Permeability Chart
+        function initTddsChart() {
+            const ctx = document.getElementById("tddsScatterChart").getContext("2d");
+            
+            const highPermData = tddsScatterData.filter(d => d.status === "高滲透");
+            const midPermData = tddsScatterData.filter(d => d.status === "中等滲透");
+            const lowPermData = tddsScatterData.filter(d => d.status === "阻障受阻");
+
+            tddsScatterChartInstance = new Chart(ctx, {
+                type: "scatter",
+                data: {
+                    datasets: [
+                        {
+                            label: "高被動穿透性 (MW < 500, LogP 1~3)",
+                            data: highPermData.map(d => ({ x: d.x, y: d.y, name: d.name })),
+                            backgroundColor: "#2D5A4C",
+                            pointRadius: 6
+                        },
+                        {
+                            label: "中等滲透 (溶解度受限)",
+                            data: midPermData.map(d => ({ x: d.x, y: d.y, name: d.name })),
+                            backgroundColor: "#D9A05B",
+                            pointRadius: 6
+                        },
+                        {
+                            label: "角質層阻障受阻 (大分子/親水極性)",
+                            data: lowPermData.map(d => ({ x: d.x, y: d.y, name: d.name })),
+                            backgroundColor: "#C86D51",
+                            pointRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: "分子量 Molecular Weight (Da)", font: { size: 11 } },
+                            min: 0,
+                            max: 1300
+                        },
+                        y: {
+                            title: { display: true, text: "油水分配係數 LogP", font: { size: 11 } },
+                            min: -2,
+                            max: 5
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const raw = context.raw;
+                                    return `${raw.name}: MW ${raw.x} Da, LogP ${raw.y}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: "bottom",
+                            labels: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
